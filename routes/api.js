@@ -14,7 +14,13 @@ const fetchAndUpdateStock = async (symbol, like, ipAddr, dbClient) => {
     // 2. fetch and update likes
     let doc = await dbClient.fetchAndUpdateDoc(symbol, like, ipAddr);
     console.log("fetch db:", doc);
-    return doc;
+
+    // 3. merge info
+    return {
+      stock: symbol,
+      price: data.latestPrice,
+      likes: doc.likes,
+    };
   } catch (err) {
     console.error(err);
   }
@@ -29,11 +35,20 @@ module.exports = (app, dbClient) => {
         fetchAndUpdateStock(stock[0], like, req.ipAddr, dbClient),
         fetchAndUpdateStock(stock[1], like, req.ipAddr, dbClient),
       ]);
+      stock1["rel_likes"] = stock1.likes - stock2.likes;
+      stock2["rel_likes"] = stock2.likes - stock1.likes;
+      delete stock1.likes; // lodash
+      delete stock2.likes;
+      console.log("two stocks:", stock1, stock2);
       // merge data;
-      console.log(stock1, stock2);
+      res.send({
+        stockData: [stock1, stock2],
+      });
     } else {
-      let ret = await fetchAndUpdateStock(stock, like, req.ipAddr, dbClient);
-      console.log("xxx");
+      let doc = await fetchAndUpdateStock(stock, like, req.ipAddr, dbClient);
+      res.send({
+        stockData: doc,
+      });
     }
   });
 };

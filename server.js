@@ -4,7 +4,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 var helmet = require("helmet");
-var expressip = require("express-ip");
 
 const apiRoutes = require("./routes/api.js");
 const fccTestingRoutes = require("./routes/fcctesting.js");
@@ -21,7 +20,6 @@ app.use(
     },
   })
 );
-app.use(expressip().getIpInfoMiddleware);
 
 app.use("/public", express.static(process.cwd() + "/public"));
 
@@ -31,11 +29,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
-  console.log(req.ipInfo, req.ip, req.connection.remoteAddress);
-  next();
-});
-
-app.use((req, res, next) => {
   req.ipAddr = req.headers["x-forwarded-for"] || req.ip;
   console.log(req.method, req.path, req.ipAddr);
   next();
@@ -43,6 +36,7 @@ app.use((req, res, next) => {
 
 //Index page (static HTML)
 app.route("/").get(function (req, res) {
+  console.log("req.ipAddr", req.ipAddr);
   res.sendFile(process.cwd() + "/views/index.html");
 });
 
