@@ -35,6 +35,12 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  req.ipAddr = req.headers["x-forwarded-for"] || req.ip;
+  console.log(req.method, req.path, req.ipAddr);
+  next();
+});
+
 //Index page (static HTML)
 app.route("/").get(function (req, res) {
   res.sendFile(process.cwd() + "/views/index.html");
