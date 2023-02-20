@@ -44,11 +44,14 @@ app.route("/").get(function (req, res) {
 fccTestingRoutes(app);
 
 //Routing for API
-apiRoutes(app);
+const connection = require("./connection");
+connection((client) => {
+  apiRoutes(app, client);
 
-//404 Not Found Middleware
-app.use(function (req, res, next) {
-  res.status(404).type("text").send("Not Found");
+  //404 Not Found Middleware
+  app.use(function (req, res, next) {
+    res.status(404).type("text").send("Not Found");
+  });
 });
 
 //Start our server and tests!
